@@ -2,7 +2,26 @@ require("dotenv").config();
 const { channel } = require("diagnostics_channel");
 const {Client, GatewayIntentBits, EmbedBuilder,} = require("discord.js");
 const googleIt = require('google-it');
+const puppeteer = require('puppeteer');
 
+
+async function scrapeImage(url){
+    const browser = await puppeteer.launch();
+    const page = await browser.newPage();
+    await page.goto(url);
+
+    //const [el] = await page.$x('//*[@id="mw-content-text"]/div[1]/table[1]/tbody/tr[2]/td/' + '/a/img');
+    //const [el] = await page.$x("//text()[contains(., " + /\/\/*\[\@id=\"mw-content-text\"\]\/div[1]\/table[1]\/tbody\/tr[2]\/td\//  + ")]");
+    
+    const [el] = await page.$x('//*[@id="mw-content-text"]/div[1]/table[1]/tbody/tr[2]/td/div/div/div[1]/div[1]/div/a/img');
+    if(typeof el !== "undefined"){
+        const src = await el.getProperty('src');
+        return src.jsonValue();
+    }
+    else {
+        return 'Image not found';
+    }
+}
 
 const client = new Client({
     intents: [
@@ -22,20 +41,24 @@ client.on("messageCreate", async(msg) => {
         let inputText = msg.content.substring(8)
         let searchHit = false;
 
-        await googleIt({'query': inputText}).then(result => {
-            result.forEach(item => {
+        googleIt({'query': inputText}).then(async result => {
+            for(const item of result){
                 if(item.title.search(/Wikipedia|Wikipedie/) != -1){
-                    //exampleEmbed.setImage()
+                    let imageSrc = await scrapeImage(item.link);
+                    if(imageSrc != 'Image not found'){
+                        exampleEmbed.setImage(imageSrc);
+                    }
+                    
                     exampleEmbed.addFields({name: item.title, value: item.link + "\n" + item.snippet});
                     searchHit = true;
                 }
-            });         
+            }
+            if(searchHit){
+                msg.channel.send({embeds: [exampleEmbed]});
+            }else{
+                msg.reply("No Wiki page was found for key: " + inputText);
+            }         
         });
-        if(searchHit){
-           msg.channel.send({embeds: [exampleEmbed]});
-        }else{
-            msg.reply("No Wiki page was found for key: " + inputText);
-        }
     }
 });
 
