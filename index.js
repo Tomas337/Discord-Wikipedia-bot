@@ -12,6 +12,7 @@ async function scrapeImage(url){
     
     const [el] = await page.$x('//*[@id="mw-content-text"]/div[1]/table[1]/tbody/tr[2]/td/div/div/div[1]/div[1]/div/a/img');
     const [el2] = await page.$x('//*[@id="mw-content-text"]/div[1]/table[1]/tbody/tr[2]/td/span/a/img');
+    const [el3] = await page.$x('//*[@id="mw-content-text"]/div[1]/figure[1]/a/img');
 
     if(typeof el !== "undefined"){
         const src = await el.getProperty('src');
@@ -19,6 +20,10 @@ async function scrapeImage(url){
     }
     else if(typeof el2 !== "undefined"){
         const src = await el2.getProperty('src');
+        return src.jsonValue();
+    }
+    else if(typeof el3 !== "undefined"){
+        const src = await el3.getProperty('src');
         return src.jsonValue();
     }
     else {
@@ -41,7 +46,10 @@ client.once("ready", () => {
 client.on("messageCreate", async(msg) => {
     if(msg.content.search(/\?search/) == 0){
         const exampleEmbed = new EmbedBuilder().setTitle('Search results');
-        let inputText = msg.content.substring(8)
+        let inputText = msg.content.substring(8).toLowerCase();
+        if(!inputText.includes("wiki")){
+            inputText += " wiki";
+        }
         let searchHit = false;
 
         googleIt({'query': inputText}).then(async result => {
