@@ -11,24 +11,24 @@ async function scrapeImage(url){
     await page.goto(url);
     
     const [el] = await page.$x('//*[@id="mw-content-text"]/div[1]/table[1]/tbody/tr[2]/td/div/div/div[1]/div[1]/div/a/img');
-    const [el2] = await page.$x('//*[@id="mw-content-text"]/div[1]/table[1]/tbody/tr[2]/td/span/a/img');
-    const [el3] = await page.$x('//*[@id="mw-content-text"]/div[1]/figure[1]/a/img');
-
     if(typeof el !== "undefined"){
         const src = await el.getProperty('src');
         return src.jsonValue();
     }
-    else if(typeof el2 !== "undefined"){
+
+    const [el2] = await page.$x('//*[@id="mw-content-text"]/div[1]/table[1]/tbody/tr[2]/td/span/a/img');
+    if(typeof el2 !== "undefined"){
         const src = await el2.getProperty('src');
         return src.jsonValue();
     }
-    else if(typeof el3 !== "undefined"){
+    const [el3] = await page.$x('//*[@id="mw-content-text"]/div[1]/figure[1]/a/img');
+    if(typeof el3 !== "undefined"){
         const src = await el3.getProperty('src');
         return src.jsonValue();
     }
-    else {
-        return 'Image not found';
-    }
+    
+    return 'Image not found';
+    
 }
 
 const client = new Client({
