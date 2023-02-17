@@ -9,13 +9,16 @@ async function scrapeImage(url){
     const browser = await puppeteer.launch();
     const page = await browser.newPage();
     await page.goto(url);
-
-    //const [el] = await page.$x('//*[@id="mw-content-text"]/div[1]/table[1]/tbody/tr[2]/td/' + '/a/img');
-    //const [el] = await page.$x("//text()[contains(., " + /\/\/*\[\@id=\"mw-content-text\"\]\/div[1]\/table[1]\/tbody\/tr[2]\/td\//  + ")]");
     
     const [el] = await page.$x('//*[@id="mw-content-text"]/div[1]/table[1]/tbody/tr[2]/td/div/div/div[1]/div[1]/div/a/img');
+    const [el2] = await page.$x('//*[@id="mw-content-text"]/div[1]/table[1]/tbody/tr[2]/td/span/a/img');
+
     if(typeof el !== "undefined"){
         const src = await el.getProperty('src');
+        return src.jsonValue();
+    }
+    else if(typeof el2 !== "undefined"){
+        const src = await el2.getProperty('src');
         return src.jsonValue();
     }
     else {
